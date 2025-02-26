@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Factoring
 {
@@ -7,22 +8,53 @@ namespace Factoring
     {
         static void Main(string[] args)
         {
-             int number;
-
-            Console.WriteLine("Digite um número inteiro positivo:");
-            number = int.Parse(Console.ReadLine());
-            if (IsPrime(number))
+            do
             {
-                Console.WriteLine($"{number} é primo");
-            }
-            else
-            {
-                Console.WriteLine($"{number} não é primo");
-                var factors = Factorize(number);
-                Console.WriteLine($"Fatores de {number}: {string.Join(", ", factors)}");
-            }
+                Console.WriteLine("Este programa verifica se um número é primo e, caso não seja, exibe seus fatores.");
+                Console.WriteLine("Digite um ou mais números inteiros positivos separados por vírgula:");
 
-            Console.ReadKey();
+                try
+                {
+                    var input = Console.ReadLine();
+                    var numbers = input.Split(',')
+                                       .Select(n => int.Parse(n.Trim()))
+                                       .ToList();
+
+                    foreach (var number in numbers)
+                    {
+                        if (IsPrime(number))
+                        {
+                            Console.WriteLine($"{number} é primo");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{number} não é primo");
+                            var factors = Factorize(number);
+                            Console.WriteLine($"Fatores de {number}: {string.Join(", ", factors)}");
+                        }
+                    }
+
+                    if (numbers.Count > 1)
+                    {
+                        int mmc = CalculateMMC(numbers);
+                        int mdc = CalculateMDC(numbers);
+                        Console.WriteLine($"MMC dos números: {mmc}");
+                        Console.WriteLine($"MDC dos números: {mdc}");
+                    }
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Entrada inválida. Certifique-se de digitar apenas números inteiros positivos separados por vírgula.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Ocorreu um erro: {ex.Message}");
+                }
+
+                Console.WriteLine("Deseja fatorar outros números? (s/n)");
+            } while (Console.ReadLine().Trim().ToLower() == "s");
+
+            Console.WriteLine("Programa encerrado.");
         }
 
         static bool IsPrime(int number)
@@ -51,6 +83,31 @@ namespace Factoring
             }
             return factors;
         }
+
+        static int CalculateMDC(List<int> numbers)
+        {
+            return numbers.Aggregate(CalculateMDC);
+        }
+
+        static int CalculateMDC(int a, int b)
+        {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        static int CalculateMMC(List<int> numbers)
+        {
+            return numbers.Aggregate(CalculateMMC);
+        }
+
+        static int CalculateMMC(int a, int b)
+        {
+            return (a / CalculateMDC(a, b)) * b;
+        }
     }
 }
-
